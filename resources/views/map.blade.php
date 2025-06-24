@@ -5,14 +5,24 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-control-search@2.9.8/dist/leaflet-search.min.css" />
 
     <style>
         #map {
             width: 100%;
-            height: calc(100vh - 56px);
+            height: calc(100vh - 60px);
+        }
+
+        .leaflet-control-search {
+            position: absolute !important;
+            top: 60px !important;
+            left: 10px !important;
+            z-index: 1000;
         }
     </style>
 @endsection
+
+
 
 @section('content')
     <div id="map"></div>
@@ -161,6 +171,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
+    <script src="https://unpkg.com/leaflet-control-search@2.9.8/dist/leaflet-search.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -168,11 +179,14 @@
     <script src="https://unpkg.com/@terraformer/wkt"></script>
 
     <script>
-        var map = L.map('map').setView([-7.777457079987586, 110.37388215598828], 13);
+        var map = L.map('map').setView([-7.84563829060681, 110.35002345004635], 10);
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            })
+
+
+            .addTo(map);
 
         /* Digitize Function */
         var drawnItems = new L.FeatureGroup();
@@ -250,7 +264,8 @@
                     "' width='250' alt=''>" + "<br>" +
                     "<div class='row mt-4'>" +
                     "<div class='col-6 text-end'>" +
-                    "<a href='" + routeedit+ "' class='btn btn-warning btn-sm'><i class='fa-solid fa-pen-to-square'></i></a>" +
+                    "<a href='" + routeedit +
+                    "' class='btn btn-warning btn-sm'><i class='fa-solid fa-pen-to-square'></i></a>" +
                     "</div>" +
                     "<div class='col-6'>" +
                     "<form method='POST' action='" + routedelete + "'>" +
@@ -259,7 +274,7 @@
                     "</form>" +
                     "</div>" +
                     "</div>" + "<br>" + "<p>Dibuat: " + feature.properties.user_created +
-                        "</p>"
+                    "</p>"
 
                 layer.on({
                     click: function(e) {
@@ -274,6 +289,8 @@
         $.getJSON("{{ route('api.points') }}", function(data) {
             point.addData(data);
             map.addLayer(point);
+
+
         });
 
         //GeoJSON Polylines
@@ -294,7 +311,8 @@
                     "' width='250' alt=''>" + "<br>" +
                     "<div class='row mt-4'>" +
                     "<div class='col-6 text-end'>" +
-                    "<a href='" + routeedit+ "' class='btn btn-warning btn-sm'><i class='fa-solid fa-pen-to-square'></i></a>" +
+                    "<a href='" + routeedit +
+                    "' class='btn btn-warning btn-sm'><i class='fa-solid fa-pen-to-square'></i></a>" +
                     "</div>" +
                     "<div class='col-6'>" +
                     "<form method='POST' action='" + routedelete + "'>" +
@@ -303,7 +321,7 @@
                     "</form>" +
                     "</div>" +
                     "</div>" + "<br>" + "<p>Dibuat: " + feature.properties.user_created +
-                        "</p>";
+                    "</p>";
 
 
                 layer.on({
@@ -339,7 +357,8 @@
                     "' width='250' alt=''>" +
                     "<div class='row mt-4'>" +
                     "<div class='col-6 text-end'>" +
-                    "<a href='" + routeedit+ "' class='btn btn-warning btn-sm'><i class='fa-solid fa-pen-to-square'></i></a>" +
+                    "<a href='" + routeedit +
+                    "' class='btn btn-warning btn-sm'><i class='fa-solid fa-pen-to-square'></i></a>" +
                     "</div>" +
                     "<div class='col-6'>" +
                     "<form method='POST' action='" + routedelete + "'>" +
@@ -348,7 +367,7 @@
                     "</form>" +
                     "</div>" +
                     "</div>" + "<br>" + "<p>Dibuat: " + feature.properties.user_created +
-                        "</p>";
+                    "</p>";
 
                 layer.on({
                     click: function(e) {
@@ -365,6 +384,51 @@
             map.addLayer(polygon);
         });
 
+        // Layer dari GeoServer via WMS
+        var geoLayer = L.tileLayer.wms("http://localhost:8080/geoserver/web_responsi/wms", {
+            layers: 'web_responsi:DIY',
+            format: 'image/png',
+            transparent: true,
+            attribution: "GeoServer - DIY"
+        }).addTo(map);
+
+
+        // Tambahan Basemaps
+        var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        });
+
+        var esriStreets = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; Esri & contributors'
+            });
+
+        var esriImagery = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; Esri & contributors'
+            });
+
+        // Replace base layer
+        osm.addTo(map); // Default base layer
+
+        var baseMaps = {
+            "OpenStreetMap": osm,
+            "Esri Streets": esriStreets,
+            "Esri Imagery": esriImagery
+        };
+
+        var overlayMaps = {
+            "Points": point,
+            "Polylines": polyline,
+            "Polygons": polygon,
+            "Admin": geoLayer
+        };
+
+        // Control Layers Pindah ke kanan bawah
+        L.control.layers(baseMaps, overlayMaps, {
+            collapsed: false,
+            position: 'bottomright'
+        }).addTo(map);
 
     </script>
 @endsection

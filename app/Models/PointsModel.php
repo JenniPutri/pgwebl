@@ -23,7 +23,7 @@ class PointsModel extends Model
             points.updated_at,
             points.user_id,
             users.name as user_created'))
-            ->join('users', 'points.user_id', '=', 'users.id')
+            ->leftJoin('users', 'points.user_id', '=', 'users.id')
             ->get();
 
         $geojson = [
@@ -49,23 +49,14 @@ class PointsModel extends Model
 
             array_push($geojson['features'], $feature);
         }
-
         return $geojson;
     }
 
+
     public function geojson_point($id)
     {
-        $points = $this
-            ->select(DB::raw('points.id,
-            ST_AsGeoJSON(points.geom) as geom,
-            points.name,
-            points.description,
-            points.image,
-            points.created_at,
-            points.updated_at,
-            points.user_id,
-            users.name as user_created'))
-            ->join('users', 'points.user_id', '=', 'users.id')
+        $points = $this->select(DB::raw('id, ST_AsGeoJSON(geom) as geom, name, image, description, created_at, updated_at'))
+            ->where('id', $id)
             ->get();
 
         $geojson = [
@@ -89,7 +80,6 @@ class PointsModel extends Model
 
             array_push($geojson['features'], $feature);
         }
-
         return $geojson;
     }
 }

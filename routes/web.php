@@ -20,13 +20,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
 Route::resource('points', PointsController::class);
 Route::resource('polylines', PolylinesController::class);
 Route::resource('polygons', PolygonsController::class);
 
-Route::get('/map', [PointsController::class, 'index'])->middleware(['auth', 'verified'])->name('map');
+
+Route::get('/map', [PointsController::class, 'index'])
+->middleware(['auth', 'verified'])
+->name('map');
 Route::get('/table', [TableController::class, 'index'])->name('table');
+
 
 
 require __DIR__.'/auth.php';
